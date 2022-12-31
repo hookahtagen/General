@@ -5,7 +5,7 @@ def mute(ip, psk):
     url = f'http://{ip}/sony/audio'
     headers = {'X-Auth-PSK': psk}
     payload = {
-        "method": "getAudioMute",
+        "method": "getVolumeInformation",
         "version": "1.0",
         "id": 1,
         "params": [],
@@ -15,7 +15,7 @@ def mute(ip, psk):
     # Parse the response to get the current audio mute status
     response_json = response.json()
     
-    current_status = response_json['result'][0]['status']
+    current_status = response_json['result'][0][0]['mute']
 
     # Send a request to set the opposite audio mute status
     payload = {
@@ -33,9 +33,13 @@ def increase_volume(ip, psk):
     headers = {'X-Auth-PSK': psk}
     payload = {
         "method": "setAudioVolume",
-        "version": "1.0",
+        "version": "1.2",
         "id": 1,
-        "params": [{"target": "speaker", "volume": "+1"}],
+        "params": [{
+            "target": "speaker", 
+            "volume": "+1",
+            "ui": "off"
+        }],
     }
     response = requests.post(url, headers=headers, json=payload)
     #print(f'Status code: {response.status_code}')
