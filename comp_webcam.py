@@ -9,22 +9,26 @@ from compreface import CompreFace
 from compreface.service import RecognitionService
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
+factor = 4
+div_factor = 0.25
+
+def get_help( key ):
+    help_dict = {}
+    
+    return '#TODO #1'
 
 def parseArguments():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--api-key", help="CompreFace recognition service API key", type=str, default='79c3ae75-2b04-4168-93f6-6a09eefccd7e')
-    parser.add_argument("--host", help="CompreFace host", type=str, default='http://localhost')
-    parser.add_argument("--port", help="CompreFace port", type=str, default='8000')
+    parser.add_argument("--api-key", help=get_help( 'api_key' ), type=str, default='79c3ae75-2b04-4168-93f6-6a09eefccd7e')
+    parser.add_argument("--host", help=get_help( 'host' ), type=str, default='http://localhost')
+    parser.add_argument("--port", help=get_help( 'port' ), type=str, default='8000')
 
     args = parser.parse_args()
 
     return args
 
-def resize_image(image, mode: str):
-    factor = 4
-    div_factor = 0.25
-    
+def resize_image( image, mode: str ):  
     if mode == 'up':
         small_image = cv2.resize( image, ( 0, 0 ), fx = factor, fy = factor )
     small_image = cv2.resize( image, ( 0, 0 ), fx = div_factor, fy = div_factor )
@@ -41,7 +45,7 @@ class ThreadedCamera:
             "limit": 0,
             "det_prob_threshold": 0.8,
             "prediction      _count": 1,
-            "face_plugins": "age,gender",
+            "face_plugins": "age,gender,landmarks",
             "status": False
         })
 
@@ -63,51 +67,54 @@ class ThreadedCamera:
                 self (ThreadedCamera) - The current ThreadedCamera object.
         '''
         print("Started")
+        process_this_frame = True
         while self.capture.isOpened():
             (status, frame_raw) = self.capture.read()
             self.frame = cv2.flip(frame_raw, 1)
-            print(self.results)
+            #print(self.results)
             
-            if self.results:
-                results = self.results
-                for result in results:
-                    box = result.get('box')
-                    age = result.get('age')
-                    gender = result.get('gender')
-                    mask = result.get('mask')
-                    subjects = result.get('subjects')
-                    if box:
-                        cv2.rectangle(img=self.frame, pt1=(box['x_min'], box['y_min']),
-                                      pt2=(box['x_max'], box['y_max']), color=(0, 255, 0), thickness=1)
-                        if age:
-                            age = f"Age: {age['low']} - {age['high']}"
-                            cv2.putText(self.frame, age, (box['x_max'], box['y_min'] + 15),
-                                        FONT, 0.6, (0, 255, 0), 1)
-                        if gender:
-                            gender = f"Gender: {gender['value']}"
-                            cv2.putText(self.frame, gender, (box['x_max'], box['y_min'] + 35),
-                                        FONT, 0.6, (0, 255, 0), 1)
-                        if mask:
-                            mask = f"Mask: {mask['value']}"
-                            cv2.putText(self.frame, mask, (box['x_max'], box['y_min'] + 55),
-                                        FONT, 0.6, (0, 255, 0), 1)
+            if process_this_frame:
+                if self.results:
+                    results = self.results
+                    for result in results:
+                        box = result.get('box')
+                        age = result.get('age')
+                        gender = result.get('gender')
+                        mask = result.get('mask')
+                        subjects = result.get('subjects')
+                        if box:
+                            cv2.rectangle(img=self.frame, pt1=(box['x_min'], box['y_min']),
+                                        pt2=(box['x_max'], box['y_max']), color=(0, 255, 0), thickness=1)
+                            if age:
+                                age = f"Age: {age['low']} - {age['high']}"
+                                cv2.putText(self.frame, age, (box['x_max'], box['y_min'] + 15),
+                                            FONT, 0.6, (0, 255, 0), 1)
+                            if gender:
+                                gender = f"Gender: {gender['value']}"
+                                cv2.putText(self.frame, gender, (box['x_max'], box['y_min'] + 35),
+                                            FONT, 0.6, (0, 255, 0), 1)
+                            if mask:
+                                mask = f"Mask: {mask['value']}"
+                                cv2.putText(self.frame, mask, (box['x_max'], box['y_min'] + 55),
+                                            FONT, 0.6, (0, 255, 0), 1)
 
-                        if subjects:
-                            subjects = sorted(subjects, key=lambda k: k['similarity'], reverse=True)
-                            subject = f"Name: {subjects[0]['subject']}"
-                            similarity = f"Similarity: {subjects[0]['similarity']}"
-                            cv2.putText(self.frame, subject, (box['x_max'], box['y_min'] + 75),
-                                        FONT, 0.6, (0, 255, 0), 1)
-                            cv2.putText(self.frame, similarity, (box['x_max'], box['y_min'] + 95),
-                                        FONT, 0.6, (0, 255, 0), 1)
-                        else:
-                            subject = f"No known faces"
-                            cv2.putText(self.frame, subject, (box['x_max'], box['y_min'] + 75),
-                                        FONT, 0.6, (0, 255, 0), 1)
+                            if subjects:
+                                subjects = sorted(subjects, key=lambda k: k['similarity'], reverse=True)
+                                subject = f"Name: {subjects[0]['subject']}"
+                                similarity = f"Similarity: {subjects[0]['similarity']}"
+                                cv2.putText(self.frame, subject, (box['x_max'], box['y_min'] + 75),
+                                            FONT, 0.6, (0, 255, 0), 1)
+                                cv2.putText(self.frame, similarity, (box['x_max'], box['y_min'] + 95),
+                                            FONT, 0.6, (0, 255, 0), 1)
+                            else:
+                                subject = f"No known faces"
+                                cv2.putText(self.frame, subject, (box['x_max'], box['y_min'] + 75),
+                                            FONT, 0.6, (0, 255, 0), 1)
 
-            cv2.imshow('CompreFace demo', self.frame)
-            time.sleep(self.FPS)
-
+                cv2.imshow('CompreFace demo', self.frame)
+                time.sleep(self.FPS)
+            process_this_frame = not process_this_frame
+            
             if cv2.waitKey(1) & 0xFF == 27:
                 self.capture.release()
                 cv2.destroyAllWindows()
