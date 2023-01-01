@@ -1,6 +1,6 @@
 import json
 import requests
-import ssl
+
 
 def send_request( filename: str, mode: str) -> dict:
     '''
@@ -13,13 +13,20 @@ def send_request( filename: str, mode: str) -> dict:
         Returns:
             dict - The JSON response from the API.
     '''
+    api_key_1 = '79c3ae75-2b04-4168-93f6-6a09eefccd7e'
+    api_key_2 = ''
+    #url
     
-    api_key = '79c3ae75-2b04-4168-93f6-6a09eefccd7e'
-    url = f'http://localhost:8000/api/v1/recognition/recognize'
-    headers = { 'x-api-key': api_key }
-    files = { 'file': open( filename, 'rb' ) }
-    response = requests.post( url, files = files, headers = headers )
-    json_data = json.loads( response.text )
+    if mode == 'recognize':
+        api_key = '79c3ae75-2b04-4168-93f6-6a09eefccd7e'
+        url = f'http://localhost:8000/api/v1/recognition/recognize'
+        headers = { 
+                   'x-api-key': api_key,
+                   'face_plugins': 'pose'
+                   }
+        files = { 'file': open( filename, 'rb' ) }
+        response = requests.post( url, files = files, headers = headers )
+        json_data = json.loads( response.text )
     return json_data
 
 def recognize_face( filename: str ) -> dict:
@@ -30,10 +37,16 @@ def recognize_face( filename: str ) -> dict:
         Parameters: 
             filename: str - The name of the file to be sent to the API.
         Returns:
-            dict - The JSON response from the API.
+            response:dict - The JSON response from the API.
+            format_response:dict - The formatted JSON response from the API.
+            
     '''
     response = send_request( filename, 'recognize' )
+    format_response = json.dumps( response, indent = 4 )
     print(json.dumps(response, indent=4))
     
+    # Returning the response and the formatted response
+    return response, format_response
+    
 
-recognize_face( 'test4.jpg' )
+recognize_face( 'test.jpg' )
