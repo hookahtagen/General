@@ -1,5 +1,6 @@
 from ctypes import resize
 from re import T
+from xml.dom.expatbuilder import theDOMImplementation
 import cv2
 import argparse
 import time
@@ -155,6 +156,13 @@ class ThreadedCamera:
         byte_im = im_buf_arr.tobytes()
         data = self.recognition.recognize(byte_im)
         self.results = data.get('result')
+        
+        results = self.results
+        for result in results: #@note process landmarks
+            box = result.get('box')
+            
+            
+            a=1
 
 if __name__ == '__main__':
     '''
