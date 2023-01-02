@@ -1,15 +1,10 @@
-from cProfile import label
 import cv2
 import os
 import time
-import tkinter as tk
 
 from types import SimpleNamespace
 from compreface import CompreFace
 from compreface.service import RecognitionService
-
-# Set the amount of time until the screen gets locked (in seconds)
-threshold = 300
 
 def sleep( seconds: int ) -> None:
     '''
@@ -66,6 +61,7 @@ def set_globals( compre_face: CompreFace ) -> SimpleNamespace:
     env.FPS = 1/30
     
     env.run_check = True
+    env.locked = True
     
     return env
 
@@ -80,12 +76,23 @@ def send_message( title = 0, minutes = 0, seconds = 0 ) -> None:
     '''
     
     message_dict = {
-        '1': f'Welcome admin!', 'Welcome!'
-        '2': f'The screen will be locked in 5 seconds!', 'WARNING!'
-        '3': f'notify-send -t 900 "You have { minutes } minutes and { seconds } seconds left until the screen gets locked!'
+        '1': f'Welcome admin!',
+        '2': f'The screen will be locked in 5 seconds!',
+        '3': f'You have 5 minutes until the screen gets locked!'
     }
     
-    notification = message_dict.get( title )
+    notification_value = message_dict.get( str( title ) )
+    
+    if title == 1:
+        # Send a notification via notify-send with a duration of 2000 ms
+        message = f"notify-send -t 2000 \"{ notification_value }\" \"WELCOME!\""
+        os.system(message)
+    elif title == 2:
+        message = f"notify-send -t 900 \"{ notification_value }\" \"Warning!\""
+        os.system( message )
+    elif title == 3:
+        message = f"notify-send -t 120000 \"{ notification_value }\" \"Warning!\""
+    
 
 def get_subjects( env ) -> any:
     '''
@@ -141,6 +148,11 @@ def search_for_admin( env ) -> None:
         else:
             env.admin_present = False
 
+
+def do_admin_things( env ) -> None:
+    clear_screen( )
+    send_message( 1 )
+
 def main( env: SimpleNamespace ) -> None:
     '''
         Explanation:
@@ -152,17 +164,17 @@ def main( env: SimpleNamespace ) -> None:
         Returns:
             None
     '''
-    threshold = 300
+    threshold = 20
     
     while True:
-        if env.run_check:
+        if env.run_check and env.locked:
             search_for_admin(env)
+            env.locked = True
             if env.admin_present:
-                clear_screen( )
-                send_message( 1 )
+                do_admin_things( env )
                 sleep( 2 )
             env.run_check = False
-        else:
+        elif env.locked == True:
             start_time = time.time()
             while True:
                 search_for_admin(env)
@@ -172,9 +184,12 @@ def main( env: SimpleNamespace ) -> None:
                     elapsed_time = time.time() - start_time
                     if elapsed_time >= threshold:
                         send_message( 2 )
-                        time.sleep(5)
+                        sleep( 2 )
+
+                        sleep( 3 )
                         # Lock the screen
                         os.system('gnome-screensaver-command --lock')
+                        env.locked = False
                         break
                     else:
                         if threshold > 0:
@@ -182,8 +197,8 @@ def main( env: SimpleNamespace ) -> None:
                             minutes = time_left // 60
                             seconds = time_left % 60
                             send_message( 3, minutes, seconds )
-                            threshold -= 5
-                            time.sleep(5)
+                    threshold -= 1
+                    sleep(1)
                   
 
 if __name__ == "__main__":
