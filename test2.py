@@ -1,11 +1,15 @@
+from cProfile import label
 import cv2
 import os
 import time
-import threading
+import tkinter as tk
 
 from types import SimpleNamespace
 from compreface import CompreFace
 from compreface.service import RecognitionService
+
+# Set the amount of time until the screen gets locked (in seconds)
+threshold = 300
 
 def sleep( seconds: int ) -> None:
     '''
@@ -45,7 +49,7 @@ def set_globals( compre_face: CompreFace ) -> SimpleNamespace:
     env = SimpleNamespace( )
     
     # Set the admin present flag
-    env.admin_present = False
+    env.admin_present = True
     
     # Set the admin name
     env.admin_name = 'Hendrik Siemens'
@@ -64,6 +68,24 @@ def set_globals( compre_face: CompreFace ) -> SimpleNamespace:
     env.run_check = True
     
     return env
+
+def send_message( title = 0, minutes = 0, seconds = 0 ) -> None:
+    '''
+        Explanation:
+            This function sends a notification to the user.
+        Parameters:
+            title: str -- The title of the notification.
+        Returns:
+            None
+    '''
+    
+    message_dict = {
+        '1': f'Welcome admin!', 'Welcome!'
+        '2': f'The screen will be locked in 5 seconds!', 'WARNING!'
+        '3': f'notify-send -t 900 "You have { minutes } minutes and { seconds } seconds left until the screen gets locked!'
+    }
+    
+    notification = message_dict.get( title )
 
 def get_subjects( env ) -> any:
     '''
@@ -134,42 +156,34 @@ def main( env: SimpleNamespace ) -> None:
     
     while True:
         if env.run_check:
-            search_for_admin( env )
+            search_for_admin(env)
             if env.admin_present:
-                print( f'Welcome admin!' )
-                sleep( 5 )
                 clear_screen( )
-                
-                env.run_check = False
-        else:    
-            search_for_admin( env )
-            
-            if not env.admin_present:
-                # Start a timer that counts to 5 minutes until the screen gets locked
-                start_time = time.time( )
-                
-                while True:
-                    if env.admin_present:
-                        print( f'Welcome back admin!' )
-                        sleep( 5 )
-                        clear_screen( )
-                        
+                send_message( 1 )
+                sleep( 2 )
+            env.run_check = False
+        else:
+            start_time = time.time()
+            while True:
+                search_for_admin(env)
+                if env.admin_present:
+                    break
+                else:
+                    elapsed_time = time.time() - start_time
+                    if elapsed_time >= threshold:
+                        send_message( 2 )
+                        time.sleep(5)
+                        # Lock the screen
+                        os.system('gnome-screensaver-command --lock')
                         break
                     else:
-                        if time.time( ) - start_time >= threshold:
-                            print( f'Screen locked in 5 seconds!' )
-                            sleep( 5 )
-                            clear_screen( )
-                            
-                            # Lock the screen
-                            os.system( 'gnome-screensaver-command --lock' )
-                            
-                            break
-                        else:
-                            print( f'You have { 300 - int( time.time( ) - start_time ) } seconds left until the screen gets locked!' )
-                            threshold -= 1
-                            sleep( 1 )
-                            clear_screen( )
+                        if threshold > 0:
+                            time_left = threshold - int(elapsed_time)
+                            minutes = time_left // 60
+                            seconds = time_left % 60
+                            send_message( 3, minutes, seconds )
+                            threshold -= 5
+                            time.sleep(5)
                   
 
 if __name__ == "__main__":
