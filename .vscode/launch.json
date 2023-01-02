@@ -13,7 +13,7 @@
             "justMyCode": true
         }
         {
-            "name": "Add Argument",
+            "name": "Python: Add Argument",
             "type": "python",
             "request": "launch",
             "program": "${file}",

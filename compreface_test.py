@@ -13,12 +13,12 @@ def send_request( filename: str, mode: str) -> dict:
         Returns:
             dict - The JSON response from the API.
     '''
-    api_key_1 = '79c3ae75-2b04-4168-93f6-6a09eefccd7e'
+    api_key_1 = 'd4ea29a3-3c79-40e9-a0e2-2e4728cd88d9'
     api_key_2 = ''
     #url
     
     if mode == 'recognize':
-        api_key = '79c3ae75-2b04-4168-93f6-6a09eefccd7e'
+        api_key = 'd4ea29a3-3c79-40e9-a0e2-2e4728cd88d9'
         url = f'http://localhost:8000/api/v1/recognition/recognize'
         headers = { 
                    'x-api-key': api_key,
@@ -42,11 +42,18 @@ def recognize_face( filename: str ) -> dict:
             
     '''
     response = send_request( filename, 'recognize' )
-    format_response = json.dumps( response, indent = 4 )
-    print(json.dumps(response, indent=4))
+    result = response['result']
+    subjects = result[0]['subjects']
+    subject = subjects[0]['subject']
+
+    if subject == 'Hendrik Siemens':
+        print( 'Hello Admin!' )
     
     # Returning the response and the formatted response
-    return response, format_response
+    #return response, format_response
+    
+    return subject
     
 
 recognize_face( 'test.jpg' )
+
