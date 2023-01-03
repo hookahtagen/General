@@ -48,6 +48,8 @@ def recognize_face( filename: str ) -> dict:
 
     if subject == 'Hendrik Siemens':
         print( 'Hello Admin!' )
+    else:
+        print( 'Unknown Person!')
     
     # Returning the response and the formatted response
     #return response, format_response

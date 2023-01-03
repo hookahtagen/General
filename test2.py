@@ -6,6 +6,10 @@ from types import SimpleNamespace
 from compreface import CompreFace
 from compreface.service import RecognitionService
 
+
+
+    
+    
 def sleep( seconds: int ) -> None:
     '''
         Explanation:
@@ -44,10 +48,10 @@ def set_globals( compre_face: CompreFace ) -> SimpleNamespace:
     env = SimpleNamespace( )
     
     # Set the admin present flag
-    env.admin_present = True
+    env.admin_present: bool = True
     
     # Set the admin name
-    env.admin_name = 'Hendrik Siemens'
+    env.admin_name: str = 'Hendrik Siemens'
     
     # Create a recognition service using compreface
     env.recognition: RecognitionService = \
@@ -60,12 +64,12 @@ def set_globals( compre_face: CompreFace ) -> SimpleNamespace:
     # Set the FPS
     env.FPS = 1/30
     
-    env.run_check = True
-    env.locked = True
+    env.run_check: bool = True
+    env.locked: bool = True
     
     return env
 
-def send_message( title = 0, minutes = 0, seconds = 0 ) -> None:
+def send_message( title = 0, start_time = 0.0 ) -> None:
     '''
         Explanation:
             This function sends a notification to the user.
@@ -74,11 +78,11 @@ def send_message( title = 0, minutes = 0, seconds = 0 ) -> None:
         Returns:
             None
     '''
+    threshold: int = 300
     
     message_dict = {
         '1': f'Welcome admin!',
-        '2': f'The screen will be locked in 5 seconds!',
-        '3': f'You have 5 minutes until the screen gets locked!'
+        '2': f'You have 5 minutes until the screen gets locked!'
     }
     
     notification_value = message_dict.get( str( title ) )
@@ -86,13 +90,23 @@ def send_message( title = 0, minutes = 0, seconds = 0 ) -> None:
     if title == 1:
         # Send a notification via notify-send with a duration of 2000 ms
         message = f"notify-send -t 2000 \"{ notification_value }\" \"WELCOME!\""
-        os.system(message)
-    elif title == 2:
-        message = f"notify-send -t 900 \"{ notification_value }\" \"Warning!\""
         os.system( message )
-    elif title == 3:
+    elif title == 2:
         message = f"notify-send -t 120000 \"{ notification_value }\" \"Warning!\""
-    
+        os.system( message )
+        
+        while True:
+            search_for_admin( env )
+            if env.admin_present:
+                message = f"notify-send -t 120000 \"Welcome back\" \"Welcome back admin!\""
+                os.system( message )
+                break
+            
+            if time.time() - start_time > threshold:
+                os.system( 'gnome-screensaver-command -l' )
+                break
+            threshold -= 1
+
 
 def get_subjects( env ) -> any:
     '''
@@ -164,41 +178,25 @@ def main( env: SimpleNamespace ) -> None:
         Returns:
             None
     '''
-    threshold = 20
     
     while True:
+        
+        # This if-statement is only to be meant run once at startup
         if env.run_check and env.locked:
             search_for_admin(env)
-            env.locked = True
             if env.admin_present:
                 do_admin_things( env )
-                sleep( 2 )
             env.run_check = False
-        elif env.locked == True:
-            start_time = time.time()
+            
+        else:
             while True:
                 search_for_admin(env)
                 if env.admin_present:
                     break
                 else:
-                    elapsed_time = time.time() - start_time
-                    if elapsed_time >= threshold:
-                        send_message( 2 )
-                        sleep( 2 )
-
-                        sleep( 3 )
-                        # Lock the screen
-                        os.system('gnome-screensaver-command --lock')
-                        env.locked = False
-                        break
-                    else:
-                        if threshold > 0:
-                            time_left = threshold - int(elapsed_time)
-                            minutes = time_left // 60
-                            seconds = time_left % 60
-                            send_message( 3, minutes, seconds )
-                    threshold -= 1
-                    sleep(1)
+                    start_time = time.time()
+                    send_message( 2, start_time )
+                    break
                   
 
 if __name__ == "__main__":
