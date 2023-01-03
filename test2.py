@@ -80,7 +80,7 @@ def send_message( title = 0, start_time = 0.0 ) -> None:
         Returns:
             None
     '''
-    threshold: int = 300
+    threshold: int = 600
     
     message_dict = {
         '1': f'Welcome admin!',
