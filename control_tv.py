@@ -43,7 +43,7 @@ ircc_codes = {
     'ChannelUp': 'AAAAAQAAAAEAAAAQAw==',
     'ChannelDown': 'AAAAAQAAAAEAAAARAw==',
     'Play': 'AAAAAgAAAJcAAAAaAw==',             # Play
-    'Pause': 'AAAAAgAAAJcAAAAZAw==',            # Play/Pause    
+    'Pause': 'AAAAAgAAAJcAAAAZAw==',            # Play/Pause
     'Stop': 'AAAAAgAAAJcAAAAYAw==',
     'FlashPlus': 'AAAAAgAAAJcAAAB4Aw==',
     'FlashMinus': 'AAAAAgAAAJcAAAB5Aw==',
