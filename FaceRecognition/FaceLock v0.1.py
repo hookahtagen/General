@@ -15,9 +15,11 @@ from compreface.service import RecognitionService
 def sleep( seconds: int ) -> None:
     '''
         Explanation:
-            This function is used to sleep the program for a certain amount of seconds.
+            This function is used to sleep the program for 
+            a certain amount of seconds.
         Parameters:
-            seconds: int -- The amount of seconds that the program should sleep.
+            seconds: int -- The amount of seconds that the 
+                            program should sleep.
         Returns:
             None
     '''
@@ -41,9 +43,11 @@ def set_globals( compre_face: CompreFace ) -> SimpleNamespace:
         Explanation:
             This function sets the global variables.
         Parameters:
-            compre_face: CompreFace -- The compreface object that is used to create the recognition service.
+            compre_face: CompreFace -- The compreface object that is used to 
+                                       create the recognition service.
         Returns:
-            env: SimpleNamespace -- The environmental namespace that contains the webcam object.
+            env: SimpleNamespace -- The environmental namespace that contains
+                                    the webcam object.
     '''
     
     # Create the environmental Namespace
@@ -99,14 +103,11 @@ def send_message( title = 0, start_time = 0.0 ) -> None:
         
         while True:
             search_for_admin( env )
-            if env.admin_present:
-                message = f"notify-send -t 120000 \"Welcome back\" \"Welcome back admin!\""
-                os.system( message )
-                break
-            
-            if time.time() - start_time > threshold:
-                os.system( 'gnome-screensaver-command -l' )
-                break
+            if not env.admin_present:
+                if time.time() - start_time > threshold:
+                    os.system( 'gnome-screensaver-command -l' )
+                    break
+            break
             threshold -= 1
 
 
