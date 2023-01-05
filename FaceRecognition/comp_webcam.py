@@ -66,8 +66,8 @@ class ThreadedCamera:
         
         # Check variable for processing boxes and showing the video stream
         self.process_box = True
-        if mode == '0':
-            self.process_box = False
+        # if mode == '0':
+        #     self.process_box = False
         
         # Define the variables for the angles of the x and y axis relative to the camera.
         # This should mean that the camera is the centre of a 'coordinate system".
