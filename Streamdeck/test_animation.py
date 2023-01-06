@@ -46,12 +46,15 @@ def create_animation_frames(deck, image_filename):
 def key_change_callback(deck, key, state):
     # Use a scoped-with on the deck to ensure we're the only thread using it
     # right now.
+    
+    print( f'key_change_callback: key={key}, state={state}' )
     with deck:
         # Reset deck, clearing all button images.
         deck.reset()
 
         # Close deck handle, terminating internal worker threads.
         deck.close()
+    
 
 
 if __name__ == "__main__":
