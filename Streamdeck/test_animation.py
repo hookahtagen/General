@@ -79,9 +79,7 @@ if __name__ == "__main__":
         # native display format so that they can be quickly sent to the device.
         print("Loading animations...")
         animations = [
-            create_animation_frames(deck, "Elephant_Walking_animated.gif"),
-            create_animation_frames(deck, "RGB_color_space_animated_view.gif"),
-            create_animation_frames(deck, "Simple_CV_Joint_animated.gif"),
+            create_animation_frames(deck, "Red_Alert.gif")
         ]
         print("Ready.")
 
