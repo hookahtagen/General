@@ -25,9 +25,9 @@ def status():
         }
     return jsonify(data)
 
-@app.route('/test_page')
+@app.route('/index')
 def test_page():
-    return render_template('test_page.html')
+    return render_template('index.html')
 
 @app.errorhandler(404)
 def page_not_found(e):
