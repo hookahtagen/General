@@ -21,7 +21,7 @@ def index():
 def status():
     data = {
         'status': 'running',
-        'version': '1.0.0'
+        'version': '1.0.1'
         }
     return jsonify(data)
 
