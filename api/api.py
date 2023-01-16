@@ -126,12 +126,12 @@ def main_loop():
         Returns:
             None
     '''
-    i=1
+    i=0
     while True:
         if i % 8 == 0:
-            i = 1
+            i = 0
             print("Main loop is running...")
-        i += 0
+        i += 1
         
         get_system_stats( )
         
