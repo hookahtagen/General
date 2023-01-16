@@ -8,11 +8,15 @@ from flask import Flask, jsonify, Response, render_template, request
 app = Flask(__name__)
 
 def check_api_key( ) -> bool:
-    if len(request.args) > 0:
+    if len(request.headers) > 0:
         hash_key = os.environ.get('API_KEY_FLASK')
-        try:
+        if request.headers.get('api_key') != None:
+            api_key = request.headers.get('api_key')
+        if request.headers.get('api-key') != None:
+            api_key = request.headers.get('api-key')
+        if request.args.get('api_key') != None:
             api_key = request.args.get('api_key')
-        except:
+        if request.args.get('api-key') != None:
             api_key = request.args.get('api-key')
             
         if api_key == "":
@@ -20,8 +24,10 @@ def check_api_key( ) -> bool:
         if api_key in ( "0000" , "1234" ):
             return False, True
         
+        print(f'api_key: {api_key}')
         api_key_hash = hashlib.sha256( api_key.encode( 'utf-8' ) ).hexdigest( )
         print(api_key)
+        print("TEST")
         if api_key_hash != hash_key:
             return False, False
         
@@ -40,15 +46,35 @@ def start():
 def status():
     val_bool, mal_bool = check_api_key( )
     if val_bool and not mal_bool:
+        
+        # status
+        status = open("/home/hendrik/Documents/General/api/status/status.log", "r").read()
+        
+        # uptime
         uptime = open("/home/hendrik/Documents/General/api/status/uptime.log", "r").read()
         uptime = uptime.replace("up ", "").replace(",", " |"). replace("\n", "")
         
+        # vnstat
+        vnstat_a = open("/home/hendrik/Documents/General/api/status/vnstat.log", "r").readlines()[3]
+        vnstat_b = open("/home/hendrik/Documents/General/api/status/vnstat.log", "r").readlines()[4]
+        
+        vnstat_a = vnstat_a.replace("rx     ", "").strip()
+        vnstat_b = vnstat_b.replace("tx     ", "").strip()
+        
+        vnstat_a = vnstat_a.split(" ")[0] + ' ' + vnstat_a.split(" ")[1]
+        vnstat_b = vnstat_b.split(" ")[0] + ' ' + vnstat_b.split(" ")[1]
+        
         data = {
-            'status': 'gestartet / running',
+            'status': status,
             'uptime': uptime,
+            'download bandwidth': vnstat_a,
+            'upload bandwidth': vnstat_b,
             'version': '1.0.1'
             }
         
+        if 'maintenance' in data['status']:
+            time.sleep(600)
+            os.system("shutdown -h now")
         json_data = json.dumps(data, indent = 4)
         return json_data
     else:
@@ -130,8 +156,8 @@ def get_system_stats():
         Returns:
             None
     '''
-    os.system("vnstat -tr 2 > /home/hendrik/Documents/General/api/status/vnstat.log")
     os.system("uptime -p > /home/hendrik/Documents/General/api/status/uptime.log")
+    os.system("vnstat -tr 2 > /home/hendrik/Documents/General/api/status/vnstat.log")
     os.system("df -h > /home/hendrik/Documents/General/api/status/df.log")
     os.system("free -h > /home/hendrik/Documents/General/api/status/free.log")
     os.system("cat /proc/loadavg > /home/hendrik/Documents/General/api/status/loadavg.log")
@@ -150,12 +176,12 @@ def main_loop():
     while True:
         if i % 2 == 0:
             i = 0
-            print("Main loop is running...")
+            print( "Main loop is running..." )
         i += 1
         
         get_system_stats( )
         
-        time.sleep(5)
+        time.sleep( 5 )
 
 def main():
     # Create two threads
@@ -163,11 +189,11 @@ def main():
     # Thread 2: Running the main loop
     
     
-    
+    lock = threading.Lock( )
     
     t1 = threading.Thread( target = app.run, kwargs = { 'host': '192.168.2.17' } )
     t1.start( )
-    t2 = threading.Thread( target = main_loop )
+    t2 = threading.Thread( target = main_loop, args=( lock ) )
     t2.start( )
     #app.run(host = "192.168.2.43")
 
