@@ -1,12 +1,36 @@
 import hashlib
+import json
 import os
 import threading
 import time
 from flask import Flask, jsonify, Response, render_template, request
 
-
 app = Flask(__name__)
 
+def check_api_key( ) -> bool:
+    if len(request.args) > 0:
+        hash_key = os.environ.get('API_KEY_FLASK')
+        try:
+            api_key = request.args.get('api_key')
+        except:
+            api_key = request.args.get('api-key')
+            
+        if api_key == "":
+            return False, False
+        if api_key in ( "0000" , "1234" ):
+            return False, True
+        
+        api_key_hash = hashlib.sha256( api_key.encode( 'utf-8' ) ).hexdigest( )
+        print(api_key)
+        if api_key_hash != hash_key:
+            return False, False
+        
+        return True, False
+    return False, False
+
+@app.route('/docs')
+def docs():
+    return jsonify({'message': 'This is the documentation for the api.'})
 
 @app.route('/')
 def start():
@@ -14,11 +38,23 @@ def start():
 
 @app.route('/status')
 def status():
-    data = {
-        'status': 'gestartet / running',
-        'version': '1.0.1'
-        }
-    return jsonify(data)
+    val_bool, mal_bool = check_api_key( )
+    if val_bool and not mal_bool:
+        uptime = open("/home/hendrik/Documents/General/api/status/uptime.log", "r").read()
+        uptime = uptime.replace("up ", "").replace(",", " |"). replace("\n", "")
+        
+        data = {
+            'status': 'gestartet / running',
+            'uptime': uptime,
+            'version': '1.0.1'
+            }
+        
+        json_data = json.dumps(data, indent = 4)
+        return json_data
+    else:
+        if mal_bool:
+            return jsonify({'error': 'Nice try. But nope. Just nope!'}), 403
+        return jsonify({'error': 'Invalid api key. Please correct the key and try again.'}), 403
 
 @app.route('/index')
 def index():
@@ -44,28 +80,18 @@ def shutdown_server():
         Returns:
             A 200 status code and a message
     '''
-    hash_key = os.environ.get('API_KEY_FLASK')
     if len(request.args) > 0:
-        if request.args.get('api-key') == "" or request.args.get('api_key') == "":
-            return jsonify({'error': 'API Key is missing! Please try again.'}), 401
-        if ( request.args.get( 'api-key' ) or request.args.get( 'api_key' ) ) in ( "0000" , "1234" ):
-            return jsonify({'error': 'Nice try. But nope. Just nope.'}), 401
-        
-        try:
-            api_key_hash = get_hash(request.args.get('api_key'))
-        except:
-            api_key_hash = get_hash(request.args.get('api-key'))
-            
-        if api_key_hash != hash_key:
-            print(api_key_hash)
-            return jsonify({'error': 'invalid API Key! Please try again.'}), 401
-        
-        time.sleep(5)
-        os.system("shutdown -h now")
-        os.shutdown(0)
-        return jsonify({'status': 'shutting down now...'}), 200
-    else:
-        return jsonify({'error': 'API Key is missing! Please try again.'}), 401
+        val_bool, mal_bool = check_api_key( )
+        if val_bool:
+            time.sleep(5)
+            os.system("shutdown -h now")
+            os.shutdown(0)
+            return jsonify({'status': 'shutting down now...'}), 200
+        if mal_bool:
+            return jsonify({'error': 'Nice try. But nope. Just nope!'}), 403
+        else:
+            return jsonify({'error': 'Invalid api key. Please correct the key and try again.'}), 403
+    return jsonify({'error': 'You must specify a api key!'}), 403
 
 @app.route('/message')
 def message_system():
@@ -93,16 +119,6 @@ def page_not_found(e):
     '''
     return jsonify({'error': 'page not found! Please try again.'}), 404
 
-def get_hash( api_key: str ) -> str:
-    '''
-        Explanation:
-            This function is used to hash the api key.
-        Parameters:
-            api_key: The api key that needs to be hashed.
-        Returns:
-            The hashed api key.
-    '''
-    return hashlib.sha256( api_key.encode( 'utf-8' ) ).hexdigest( )
 
 def get_system_stats():
     '''
@@ -114,7 +130,11 @@ def get_system_stats():
         Returns:
             None
     '''
-    pass
+    os.system("vnstat -tr 2 > /home/hendrik/Documents/General/api/status/vnstat.log")
+    os.system("uptime -p > /home/hendrik/Documents/General/api/status/uptime.log")
+    os.system("df -h > /home/hendrik/Documents/General/api/status/df.log")
+    os.system("free -h > /home/hendrik/Documents/General/api/status/free.log")
+    os.system("cat /proc/loadavg > /home/hendrik/Documents/General/api/status/loadavg.log")
 
 def main_loop():
     '''
@@ -128,14 +148,14 @@ def main_loop():
     '''
     i=0
     while True:
-        if i % 8 == 0:
+        if i % 2 == 0:
             i = 0
             print("Main loop is running...")
         i += 1
         
         get_system_stats( )
         
-        time.sleep(1.25)
+        time.sleep(5)
 
 def main():
     # Create two threads
@@ -143,8 +163,9 @@ def main():
     # Thread 2: Running the main loop
     
     
-    # Start the flask server
-    t1 = threading.Thread( target = app.run, kwargs = { 'host': '192.168.2.43' } )
+    
+    
+    t1 = threading.Thread( target = app.run, kwargs = { 'host': '192.168.2.17' } )
     t1.start( )
     t2 = threading.Thread( target = main_loop )
     t2.start( )

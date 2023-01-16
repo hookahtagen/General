@@ -1,0 +1,7 @@
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           787M  2,1M  785M   1% /run
+/dev/sdc3       916G  116G  754G  14% /
+tmpfs           3,9G  326M  3,6G   9% /dev/shm
+tmpfs           5,0M  4,0K  5,0M   1% /run/lock
+/dev/sdc2       512M  5,3M  507M   2% /boot/efi
+tmpfs           787M  152K  787M   1% /run/user/1000

@@ -1,8 +1,38 @@
 <html>
+
 <head>
 <title>Fuck yeah</title>
+  <style>
+    .caption {
+        margin-top: 10px;
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      padding: 12px 16px;
+      z-index: 1;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    .border {
+      border: 2px solid rgb(255, 0, 0);
+    }
+  </style>
 </head>
+
 <body>
+
   <div style="text-align: center;">
     <h1>
       Welcome to my API!
@@ -21,16 +51,55 @@
         <br>
         <br>
         For now it cotains the following functions:
-          <h2>Shutdown</h2>
-          - <a href="/shutdown?api_key=">Shutdown format 'api_key'</a><br>
-          or<br>
-          - <a href="/shutdown?api-key=">Shutdown format 'api-key'</a>
-        <br>
-        <br>
-        <img src="static/shutdown_doc1.png" alt="Do so by copying the link by right clicking and selecting 'Copy link address'">
-        <img src="static/shutdown_doc2.png" alt="Insert your ownn api key and hit Enter">
+          <div class="dropdown">
+            <h2>1. Shutdown</h2>
+            <div class="dropdown-content">
+              - <a href="/shutdown?api_key=">Shutdown format 'api_key'</a><br>
+              or<br>
+              - <a href="/shutdown?api-key=">Shutdown format 'api-key'</a>
+              <br>
+              <br>
+              <figure>
+                <img src="static/shutdown_doc1.png" alt="Do so by copying the link by right clicking and selecting 'Copy link address'">
+                <figcaption class="caption">Do so by copying the link by right clicking and selecting 'Copy link address'</figcaption>
+              </figure>
+              <br>
+              <figure>
+                <img src="static/shutdown_doc2.png" alt="Insert your own api key and hit Enter">
+                <figcaption class="caption">Insert your own api key and hit Enter</figcaption>
+              </figure>
+              <br>
+            </div>
+          </div>
+          <br>
+          <br>
+          <div class="dropdown">
+            <h2>2. Status</h2>
+            <div class="dropdown-content">
+              - <a href="/status?api_key=">Status format 'api_key'</a><br>
+              or<br>
+              - <a href="/status?api-key=">Status format 'api-key'</a>
+              <br>
+              <br>
+              Right click and select 'Copy link address' to copy the link.<br>
+              It doesn't matter which format you use, but I recommend using the first one.<br>
+              <br>
+              Then paste the link in your browser and insert your own api key.<br><br>
+              Hit Enter and et voila!<br>
+            </div>
+          </div>
+          <br>
+          <br>
+          <br>
+          <div class="border", style="text-align: center;">
+            <h3>For further documentation to this api visit: <a href="192.168.2.17:5000/docs"> Documentation </a></h3>
+          </div>
       </p>
+
     </div>
+
   </div>
+
 </body>
+
 </html>  
