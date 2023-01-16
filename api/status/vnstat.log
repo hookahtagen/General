@@ -1,6 +1,6 @@
-Sampling enp6s0 (2 seconds average)...[1G[2K6 packets sampled in 2 seconds
+Sampling enp6s0 (2 seconds average)...[1G[2K26 packets sampled in 2 seconds
 Traffic average for enp6s0
 
-      rx         1,44 kbit/s             3 packets/s
-      tx             0 bit/s             0 packets/s
+      rx        20,60 kbit/s            12 packets/s
+      tx           580 bit/s             1 packets/s
 
