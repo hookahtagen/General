@@ -1,5 +1,5 @@
+.gitignore
 Roboto-Regular.ttf
 api/status/vnstat.log
-.gitignore
 api/status/free.log
 api/status/df.log
