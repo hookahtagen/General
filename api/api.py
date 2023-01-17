@@ -1,11 +1,25 @@
+from datetime import datetime
 import hashlib
 import json
 import os
-import threading
+import sqlite3 as s
 import time
+import threading
+
 from flask import Flask, jsonify, Response, render_template, request
 
 app = Flask(__name__)
+
+def clear_screen( ):
+    '''
+        Explanation:
+            Clears the console screen.
+        Parameters:
+            None
+        Returns:
+            None
+    '''
+    os.system( 'clear' )
 
 def check_api_key( ) -> bool:
     if len(request.headers) > 0:
@@ -33,6 +47,55 @@ def check_api_key( ) -> bool:
         
         return True, False
     return False, False
+
+def print_console( message ):
+    '''
+        Explanation:
+            Prints a message to the console in a nice format.
+        Parameters:
+            message: str - The message to print to the console.
+        Returns:
+            None
+    '''
+    print('\n****************************\n')
+    print( message )
+    print('\n****************************\n')
+
+def send_notification( message ):
+    '''
+        Explanation:
+            Sends a notification to the user, that a new message has been received.
+        Parameters:
+            message: str - The message to send to the user.
+        Returns:
+            None
+    '''
+    DURATION = 5000
+    
+    # send a notiffy-send notification, that a new message has been received
+    os.system( f'notify-send -t { DURATION } "New message received" "{ message }"' )
+
+def get_db_connect( ):
+    db_name = '/home/hendrik/Documents/General/api/messages.db'
+    conn = s.connect( db_name )
+    cursor = conn.cursor( )
+    
+    if conn and cursor:
+        print_console( 'Connected to database' )
+    else:
+        print_console( 'Failed to connect to database' )
+        return None, None
+    
+    return conn, cursor
+
+def message_to_db( message, m_hash, timestamp, conn, cursor ):
+    cursor.execute( 'INSERT INTO message (message, m_hash, time_stamp, seen) VALUES (?, ?, ?, ?)', ( message, m_hash, timestamp, 0 ) )
+    conn.commit( )
+    print_console( 'Message added to database' )
+    
+    # send a notiffy-send notification, that a new message has been received
+    
+    send_notification( message )
 
 @app.route('/docs')
 def docs():
@@ -120,7 +183,7 @@ def shutdown_server():
             return jsonify({'error': 'Invalid api key. Please correct the key and try again.'}), 403
     return jsonify({'error': 'You must specify a api key!'}), 403
 
-@app.route('/message')
+@app.route('/message', '/nachricht')
 def message_system():
     '''
         Exaplanation:
@@ -131,7 +194,31 @@ def message_system():
         Returns:
             A 200 status code and a message
     '''
-    a=1
+    return render_template('message.html')
+
+@app.route( '/send_message', methods = [ 'POST' ] )
+def send_message( ):
+    timestamp = datetime.now( ).strftime( '%Y-%m-%d %H:%M:%S' )
+    conn, cursor = get_db_connect( )
+    message = request.form[ 'message' ]
+    
+    # Load the message with the current timestamp into the messages_db database
+    # and create a hash from the message
+    # Database structure:
+    # tables
+    #   |
+    #   |--> message -> fields
+    #                       |--> id (Primary Key, Integer, Not Null)
+    #                       |--> message (Text, Not Null)
+    #                       |--> m_hash (Text, Not Null)
+    #                       |--> time_stamp (Text, Not Null)
+    #                       |--> seen (Integer, Not Null)
+    
+    m_hash = hashlib.sha256( message.encode( 'utf-8' ) ).hexdigest( )
+    
+    message_to_db( message, m_hash, timestamp, conn, cursor )
+    
+    return 'Gesndete Nachricht: {}'.format( message )
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -173,12 +260,10 @@ def main_loop():
         Returns:
             None
     '''
-    i=0
+
     while True:
-        if i % 2 == 0:
-            i = 0
-            print( "Main loop is running..." )
-        i += 1
+        clear_screen( )
+        print( "Main loop is running..." )
         
         get_system_stats( )
         
