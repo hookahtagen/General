@@ -36,7 +36,7 @@ def check_api_key( ) -> bool:
 
 @app.route('/docs')
 def docs():
-    return jsonify({'message': 'This is the documentation for the api.'})
+    return render_template('docs.html')
 
 @app.route('/')
 def start():
@@ -44,6 +44,7 @@ def start():
 
 @app.route('/status')
 def status():
+    time.sleep(1)
     val_bool, mal_bool = check_api_key( )
     if val_bool and not mal_bool:
         
@@ -184,19 +185,11 @@ def main_loop():
         time.sleep( 5 )
 
 def main():
-    # Create two threads
-    # Thread 1: Running the flask server
-    # Thread 2: Running the main loop
-    
-    
-    lock = threading.Lock( )
-    
+        
     t1 = threading.Thread( target = app.run, kwargs = { 'host': '192.168.2.17' } )
     t1.start( )
-    t2 = threading.Thread( target = main_loop, args=( lock ) )
+    t2 = threading.Thread( target = main_loop )
     t2.start( )
-    #app.run(host = "192.168.2.43")
-
 
 if __name__ == '__main__':
     main( )

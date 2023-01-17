@@ -1,7 +1,0 @@
-Welcome to my API!
-
-This API is going to contain...
-I don't know what it is going to contain yet, but I will update this post when I do.
-
-So, if you want to use this API, you can use it, but I will not be responsible for any damage that it may cause,
-and I will not be responsible for any downtime that it may cause.

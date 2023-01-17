@@ -1,0 +1,81 @@
+<html>
+
+    <head>
+    <title>Fuck yeah</title>
+    <style>
+        .caption {
+            margin-top: 10px;
+        }
+
+        .dropdown {
+        position: relative;
+        display: inline-block;
+        }
+
+        .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        padding: 12px 16px;
+        z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+        display: block;
+        }
+        .border {
+        border: 2px solid rgb(255, 0, 0);
+        }
+    </style>
+    </head>
+
+    <body>
+
+        <div style="text-align: center;">
+            <h1>
+            Documentation
+            </h1>
+        </div>
+
+        <div style="text-align: center">
+            <div style="display: inline-block; text-align: left;">
+                <h2 id="reveal-text" onclick="toggleTextBox()"><u>Shutdown</u></h2>
+                <p style="float: left; text-align: match-parent;">
+
+                    <!-- The hidden text box -->
+                    <div id="text-box" style="display:none;">
+                        <p>
+                            <h3>Format 1</h3>
+                            <a href="/shutdown?api_key=">Shutdown format 'api_key'</a><br><br>
+                            or<br><br>
+                            <a href="/shutdown?api-key=">Shutdown format 'api-key'</a>
+                            <br>
+                            <br>
+                            Just right click one of the links and click "Copy link address" and then paste it into your browser.<br>
+                            Then edit the link to include your API key.<br>
+                            Then hit enter and the server will shutdown.<br>
+                            <br>
+                    </div>
+
+                    <script>
+                        function toggleTextBox() {
+                            // Get the text box element
+                            var textBox = document.getElementById("text-box");
+                            // Toggle its visibility
+                            if (textBox.style.display === "none") {
+                                textBox.style.display = "block";
+                            } else {
+                                textBox.style.display = "none";
+                            }
+                        }
+                    </script>
+
+                </p>
+            </div>
+        </div>
+
+    </body>
+
+</html>  
