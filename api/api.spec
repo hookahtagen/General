@@ -8,7 +8,7 @@ a = Analysis(
     ['api.py'],
     pathex=[],
     binaries=[],
-    datas=[('/home/hendrik/Documents/General/api/templates', 'templates'), ('/home/hendrik/Documents/General/api/static', 'static'), ('/home/hendrik/Documents/General/api/sounds', 'sounds')],
+    datas=[('/home/hendrik/Documents/General/api/templates', 'templates'), ('/home/hendrik/Documents/General/api/static', 'static'), ('/home/hendrik/Documents/General/api/sounds', 'sounds'), ('/home/hendrik/Documents/General/api/log', 'log'), ('/home/hendrik/Documents/General/api/status', 'status')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

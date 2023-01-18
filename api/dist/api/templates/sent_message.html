@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <title>Message Form</title>
+        <style>
+
+        body {
+            background-color: #000000;
+            font-family: sans-serif;
+            font-size: 16px;
+            color: rgb(255, 255, 255);
+        }
+
+        .border {
+            border: 2px solid rgb(255, 0, 0);
+        }
+
+        @media (min-width: 1500px) {
+            body {
+            font-size: 18px;
+            }
+        }
+        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div class="border", style="text-align: center;">
+            <h3>Gesendete Nachricht: {{ message }}</h3>
+        </div>        
+    </body>
+</html>
