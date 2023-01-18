@@ -9,6 +9,7 @@ import threading
 from flask import Flask, jsonify, Response, render_template, request
 
 app = Flask(__name__)
+lock = threading.Lock( )
 
 def clear_screen( ):
     '''
@@ -73,7 +74,7 @@ def send_notification( message ):
     DURATION = 5000
     
     # send a notiffy-send notification, that a new message has been received
-    os.system( f'notify-send -t { DURATION } "New message received" "{ message }"' )
+    os.system( f'notify-send -t { DURATION } "New message received ( c2 )" "{ message }"' )
 
 def get_db_connect( ):
     db_name = '/home/hendrik/Documents/General/api/messages.db'
@@ -96,37 +97,101 @@ def message_to_db( message, m_hash, timestamp, conn, cursor ):
     # send a notiffy-send notification, that a new message has been received
     
     send_notification( message )
+    
+def get_system_stats():
+    '''
+        Exaplanation:
+            This function is used to get the system stats.
+            It is used for various tasks, such as checking the status of the system.
+        Parameters:
+            None
+        Returns:
+            None
+    '''
+    os.system("uptime -p > /home/hendrik/Documents/General/api/status/uptime.log")
+    os.system("vnstat -tr 2 > /home/hendrik/Documents/General/api/status/vnstat.log")
+    os.system("df -h > /home/hendrik/Documents/General/api/status/df.log")
+    os.system("free -h > /home/hendrik/Documents/General/api/status/free.log")
+    os.system("cat /proc/loadavg > /home/hendrik/Documents/General/api/status/loadavg.log")
+
+#
+# ************************************** API FUNCTIONS **************************************
+#
 
 @app.route('/docs')
-def docs():
+def docs( ):
     return render_template('docs.html')
 
 @app.route('/')
-def start():
+def start( ):
    return index( )
 
+@app.route('/index')
+def index( ):
+    '''
+        Exaplanation:
+            This function is called when the user tries to access the index page.
+            It returns a 200 status code and a message.
+        Parameters:
+            None
+        Returns:
+            A 200 status code and a message
+    '''
+    return render_template('index.html')
+
+@app.route('/shutdown')
+def shutdown_server( ):
+    '''
+        Exaplanation:
+            This function is called when the user tries to access the shutdown page.
+            It returns a 200 status code and a message.
+        Parameters:
+            None
+        Returns:
+            A 200 status code and a message
+    '''
+    if len(request.args) > 0:
+        if request.args.get('api_key') or request.headers.get('api_key') == "E!QLm9cTJY;F":
+            val_bool, mal_bool = True, False
+        #val_bool, mal_bool = check_api_key( )
+        if val_bool:
+            time.sleep(5)
+            os.system("shutdown -h now")
+            os.shutdown(0)
+            return jsonify({'status': 'shutting down now...'}), 200
+        if mal_bool:
+            return jsonify({'error': 'Nice try. But nope. Just nope!'}), 403
+        else:
+            return jsonify({'error': 'Invalid api key. Please correct the key and try again.'}), 403
+    return jsonify({'error': 'You must specify a api key!'}), 403
+
 @app.route('/status')
-def status():
-    time.sleep(1)
-    val_bool, mal_bool = check_api_key( )
+def status( ):
+    time.sleep( 1 )
+    if request.args.get( 'api_key' ) or request.headers.get( 'api_key' ) == "E!QLm9cTJY;F":
+        val_bool, mal_bool = True, False
+    else:
+        val_bool, mal_bool = False, True
+    #val_bool, mal_bool = check_api_key( )
     if val_bool and not mal_bool:
-        
-        # status
-        status = open("/home/hendrik/Documents/General/api/status/status.log", "r").read()
-        
-        # uptime
-        uptime = open("/home/hendrik/Documents/General/api/status/uptime.log", "r").read()
-        uptime = uptime.replace("up ", "").replace(",", " |"). replace("\n", "")
-        
-        # vnstat
-        vnstat_a = open("/home/hendrik/Documents/General/api/status/vnstat.log", "r").readlines()[3]
-        vnstat_b = open("/home/hendrik/Documents/General/api/status/vnstat.log", "r").readlines()[4]
-        
-        vnstat_a = vnstat_a.replace("rx     ", "").strip()
-        vnstat_b = vnstat_b.replace("tx     ", "").strip()
-        
-        vnstat_a = vnstat_a.split(" ")[0] + ' ' + vnstat_a.split(" ")[1]
-        vnstat_b = vnstat_b.split(" ")[0] + ' ' + vnstat_b.split(" ")[1]
+        with lock:
+            # status
+            status = open("/home/hendrik/Documents/General/api/status/status.log", "r").read()
+            
+            # uptime
+            uptime = open("/home/hendrik/Documents/General/api/status/uptime.log", "r").read()
+            uptime = uptime.replace("up ", "").replace(",", " |"). replace("\n", "")
+            
+            # vnstat
+            vnstat_a = open("/home/hendrik/Documents/General/api/status/vnstat.log", "r").readlines()[3]
+            vnstat_b = open("/home/hendrik/Documents/General/api/status/vnstat.log", "r").readlines()[4]
+            
+            
+            vnstat_a = vnstat_a.replace("rx     ", "").strip()
+            vnstat_b = vnstat_b.replace("tx     ", "").strip()
+            
+            vnstat_a = vnstat_a.split(" ")[0] + ' ' + vnstat_a.split(" ")[1]
+            vnstat_b = vnstat_b.split(" ")[0] + ' ' + vnstat_b.split(" ")[1]
         
         data = {
             'status': status,
@@ -146,45 +211,9 @@ def status():
             return jsonify({'error': 'Nice try. But nope. Just nope!'}), 403
         return jsonify({'error': 'Invalid api key. Please correct the key and try again.'}), 403
 
-@app.route('/index')
-def index():
-    '''
-        Exaplanation:
-            This function is called when the user tries to access the index page.
-            It returns a 200 status code and a message.
-        Parameters:
-            None
-        Returns:
-            A 200 status code and a message
-    '''
-    return render_template('index.html')
-
-@app.route('/shutdown')
-def shutdown_server():
-    '''
-        Exaplanation:
-            This function is called when the user tries to access the shutdown page.
-            It returns a 200 status code and a message.
-        Parameters:
-            None
-        Returns:
-            A 200 status code and a message
-    '''
-    if len(request.args) > 0:
-        val_bool, mal_bool = check_api_key( )
-        if val_bool:
-            time.sleep(5)
-            os.system("shutdown -h now")
-            os.shutdown(0)
-            return jsonify({'status': 'shutting down now...'}), 200
-        if mal_bool:
-            return jsonify({'error': 'Nice try. But nope. Just nope!'}), 403
-        else:
-            return jsonify({'error': 'Invalid api key. Please correct the key and try again.'}), 403
-    return jsonify({'error': 'You must specify a api key!'}), 403
-
-@app.route('/message', '/nachricht')
-def message_system():
+@app.route('/nachricht')
+@app.route('/message')
+def message_system( ):
     '''
         Exaplanation:
             This function is called when the user tries to access the message page.
@@ -234,23 +263,7 @@ def page_not_found(e):
     return jsonify({'error': 'page not found! Please try again.'}), 404
 
 
-def get_system_stats():
-    '''
-        Exaplanation:
-            This function is used to get the system stats.
-            It is used for various tasks, such as checking the status of the system.
-        Parameters:
-            None
-        Returns:
-            None
-    '''
-    os.system("uptime -p > /home/hendrik/Documents/General/api/status/uptime.log")
-    os.system("vnstat -tr 2 > /home/hendrik/Documents/General/api/status/vnstat.log")
-    os.system("df -h > /home/hendrik/Documents/General/api/status/df.log")
-    os.system("free -h > /home/hendrik/Documents/General/api/status/free.log")
-    os.system("cat /proc/loadavg > /home/hendrik/Documents/General/api/status/loadavg.log")
-
-def main_loop():
+def main_loop( ):
     '''
         Exaplanation:
             This function is for handling most of the logic of the program.
@@ -265,13 +278,15 @@ def main_loop():
         clear_screen( )
         print( "Main loop is running..." )
         
-        get_system_stats( )
+        with lock:
+            get_system_stats( )
         
         time.sleep( 5 )
 
 def main():
         
-    t1 = threading.Thread( target = app.run, kwargs = { 'host': '192.168.2.17' } )
+    # t1 = threading.Thread( target = app.run, kwargs = { 'host': '192.168.2.17' } ) ; also include the lock
+    t1 = threading.Thread( target = app.run, kwargs = { 'host': '192.168.2.17', 'port': 5000 } )
     t1.start( )
     t2 = threading.Thread( target = main_loop )
     t2.start( )
