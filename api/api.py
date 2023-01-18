@@ -1,6 +1,7 @@
 from datetime import datetime
 import hashlib
 import json
+import logging
 import os
 import sqlite3 as s
 import time
@@ -8,8 +9,40 @@ import threading
 
 from flask import Flask, jsonify, Response, render_template, request
 
-app = Flask(__name__)
+app = Flask( __name__ )
 lock = threading.Lock( )
+
+class logger:
+    def __init__( self, name ):
+        self.logger = logging.getLogger( name )
+        self.logger.setLevel( logging.DEBUG )
+        self.file_handler = logging.FileHandler( '/home/hendrik/Documents/General/api/logs/server_log.log' )
+        self.file_handler.setFormatter( logging.Formatter( '%(asctime)s - %(levelname)s - %(message)s' ) )
+        self.logger.addHandler( self.file_handler )
+
+    def debug( self, message ):
+        message = '\n**********************\n' + message + '\n**********************'
+        self.logger.debug( message )
+
+    def info( self, message ):
+        message = '\n**********************\n' + message + '\n***********************'
+        self.logger.info( message )
+
+    def warning( self, message ):
+        message = '\n**********************\n' + message + '\n********************'
+        self.logger.warning( message )
+
+    def error( self, message ):
+        message = '\n**********************\n' + message + '\n**********************'
+        self.logger.error( message )
+
+    def critical( self, message ):
+        message = '\n**********************\n' + message + '\n*******************'
+        self.logger.critical( message )
+        
+#
+log = logger( 'api' )
+#
 
 def clear_screen( ):
     '''
@@ -23,16 +56,16 @@ def clear_screen( ):
     os.system( 'clear' )
 
 def check_api_key( ) -> bool:
-    if len(request.headers) > 0:
-        hash_key = os.environ.get('API_KEY_FLASK')
-        if request.headers.get('api_key') != None:
-            api_key = request.headers.get('api_key')
-        if request.headers.get('api-key') != None:
-            api_key = request.headers.get('api-key')
-        if request.args.get('api_key') != None:
-            api_key = request.args.get('api_key')
-        if request.args.get('api-key') != None:
-            api_key = request.args.get('api-key')
+    if len( request.headers ) > 0:
+        hash_key = os.environ.get( 'API_KEY_FLASK' )
+        if request.headers.get( 'api_key' ) != None:
+            api_key = request.headers.get( 'api_key' )
+        if request.headers.get( 'api-key' ) != None:
+            api_key = request.headers.get( 'api-key' )
+        if request.args.get( 'api_key' ) != None:
+            api_key = request.args.get( 'api_key' )
+        if request.args.get( 'api-key' ) != None:
+            api_key = request.args.get( 'api-key' )
             
         if api_key == "":
             return False, False
@@ -41,8 +74,8 @@ def check_api_key( ) -> bool:
         
         print(f'api_key: {api_key}')
         api_key_hash = hashlib.sha256( api_key.encode( 'utf-8' ) ).hexdigest( )
-        print(api_key)
-        print("TEST")
+        print( api_key )
+        print( "TEST" )
         if api_key_hash != hash_key:
             return False, False
         
@@ -58,9 +91,9 @@ def print_console( message ):
         Returns:
             None
     '''
-    print('\n****************************\n')
+    print( '\n****************************\n' )
     print( message )
-    print('\n****************************\n')
+    print( '\n****************************\n' )
 
 def send_notification( message ):
     '''
@@ -98,7 +131,7 @@ def message_to_db( message, m_hash, timestamp, conn, cursor ):
     
     send_notification( message )
     
-def get_system_stats():
+def get_system_stats( ):
     '''
         Exaplanation:
             This function is used to get the system stats.
@@ -108,25 +141,25 @@ def get_system_stats():
         Returns:
             None
     '''
-    os.system("uptime -p > /home/hendrik/Documents/General/api/status/uptime.log")
-    os.system("vnstat -tr 2 > /home/hendrik/Documents/General/api/status/vnstat.log")
-    os.system("df -h > /home/hendrik/Documents/General/api/status/df.log")
-    os.system("free -h > /home/hendrik/Documents/General/api/status/free.log")
-    os.system("cat /proc/loadavg > /home/hendrik/Documents/General/api/status/loadavg.log")
+    os.system( "uptime -p > /home/hendrik/Documents/General/api/status/uptime.log" )
+    os.system( "vnstat -tr 2 > /home/hendrik/Documents/General/api/status/vnstat.log" )
+    os.system( "df -h > /home/hendrik/Documents/General/api/status/df.log" )
+    os.system( "free -h > /home/hendrik/Documents/General/api/status/free.log" )
+    os.system( "cat /proc/loadavg > /home/hendrik/Documents/General/api/status/loadavg.log" )
 
 #
 # ************************************** API FUNCTIONS **************************************
 #
 
-@app.route('/docs')
+@app.route( '/docs' )
 def docs( ):
-    return render_template('docs.html')
+    return render_template( 'docs.html' )
 
-@app.route('/')
+@app.route( '/' )
 def start( ):
    return index( )
 
-@app.route('/index')
+@app.route( '/index' )
 def index( ):
     '''
         Exaplanation:
@@ -137,9 +170,9 @@ def index( ):
         Returns:
             A 200 status code and a message
     '''
-    return render_template('index.html')
+    return render_template( 'index.html' )
 
-@app.route('/shutdown')
+@app.route( '/shutdown' )
 def shutdown_server( ):
     '''
         Exaplanation:
@@ -273,6 +306,9 @@ def main_loop( ):
         Returns:
             None
     '''
+    
+    # Log started server
+    log.info( "Server started" )
 
     while True:
         clear_screen( )
