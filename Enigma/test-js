@@ -1,0 +1,16 @@
+// This is just a test script
+
+var a = 1;
+var b = 2;
+
+function add(a, b) {
+    return a + b;
+}
+
+
+describe('test Untitled_1', function() {
+    it('test Untitled-1.add', function(done) {
+        assert.equal(3, Untitled_1.add(1, 2));
+        done();
+    })
+})
